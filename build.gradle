@@ -10,7 +10,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:7.0.4"
+        classpath 'com.android.tools.build:gradle:7.1.2'
         classpath "com.neenbedankt.gradle.plugins:android-apt:$versions.neenbedankt_gradle_plugin"
         classpath "com.testdroid:gradle:$versions.testdroid_gradle"
         classpath "gradle.plugin.com.browserstack.gradle:browserstack-gradle-plugin:$versions.browserstack_gradle_plugin"

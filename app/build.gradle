@@ -31,7 +31,7 @@ android {
         vectorDrawables.useSupportLibrary = true
 
     }
-    lintOptions {
+    lint {
         abortOnError false
     }
 
@@ -50,12 +50,14 @@ android {
         }
     }
     packagingOptions {
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'LICENSE.txt'
+        resources {
+            excludes += ['META-INF/LICENSE.txt',
+                         'META-INF/NOTICE.txt',
+                         'META-INF/LICENSE',
+                         'META-INF/NOTICE',
+                         'META-INF/DEPENDENCIES',
+                         'LICENSE.txt']
+        }
     }
     productFlavors {
         releaseflavor {
@@ -125,7 +127,7 @@ dependencies {
     //header recyclerview
     implementation libraries.sectioned_recyclerview_adapter
 
-    implementation group: 'androidx.preference', name: 'preference', version: '1.1.1'
+    implementation group: 'androidx.preference', name: 'preference', version: '1.2.0'
 
     //crash reporting
     implementation libraries.acra_core
@@ -153,8 +155,8 @@ dependencies {
     annotationProcessor libraries.glideAnnotate
 
     implementation "androidx.work:work-runtime-ktx:2.7.1"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1"
 
     implementation libraries.guava
     implementation libraries.sheetsInfo

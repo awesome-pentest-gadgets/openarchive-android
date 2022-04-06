@@ -17,7 +17,7 @@ object Prefs{
 
     private var prefs: SharedPreferences? = null
 
-    fun setContext(context: Context?) {
+    fun setContext(context: Context) {
         if (prefs == null) prefs = PreferenceManager.getDefaultSharedPreferences(context)
     }
 
