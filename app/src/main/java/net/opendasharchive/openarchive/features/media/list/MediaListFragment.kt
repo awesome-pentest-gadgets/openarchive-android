@@ -21,29 +21,28 @@ import net.opendasharchive.openarchive.util.Constants.EMPTY_ID
 open class MediaListFragment : Fragment() {
 
     private var mProjectId: Long = -1
+
     private var mStatus = Media.STATUS_UPLOADING.toLong()
+
     private var mStatuses = longArrayOf(
         Media.STATUS_UPLOADING.toLong(),
-        Media.STATUS_QUEUED.toLong(), Media.STATUS_ERROR.toLong()
-    )
+        Media.STATUS_QUEUED.toLong(), Media.STATUS_ERROR.toLong())
+
     open var mMediaAdapter: MediaAdapter? = null
 
-    private var _mBinding: FragmentMediaListBinding? = null
+    private var mBinding: FragmentMediaListBinding? = null
+
     private lateinit var viewModel: MediaListViewModel
 
     private val mItemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
         ItemTouchHelper.UP or ItemTouchHelper.DOWN,
-        ItemTouchHelper.END or ItemTouchHelper.START
-    ) {
-        override fun onMove(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            target: RecyclerView.ViewHolder
-        ): Boolean {
-            mMediaAdapter?.onItemMove(
-                viewHolder.adapterPosition,
-                target.adapterPosition
-            )
+        ItemTouchHelper.END or ItemTouchHelper.START) {
+
+        override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder): Boolean
+        {
+            mMediaAdapter?.onItemMove(viewHolder.adapterPosition, target.adapterPosition)
+
             return true
         }
 
@@ -52,54 +51,55 @@ open class MediaListFragment : Fragment() {
         }
     })
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        _mBinding = FragmentMediaListBinding.inflate(inflater, container, false)
-        _mBinding?.root?.tag = TAG
-        viewModel = ViewModelProvider(this).get(MediaListViewModel::class.java)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
+    {
+        mBinding = FragmentMediaListBinding.inflate(inflater, container, false)
+        mBinding?.root?.tag = TAG
+
+        viewModel = ViewModelProvider(this)[MediaListViewModel::class.java]
         observeData()
         viewModel.getMediaList(mProjectId, mStatuses)
-        return _mBinding?.root
+
+        return mBinding?.root
     }
 
     private fun observeData() {
-        viewModel.mediaList.observe(viewLifecycleOwner, Observer {
+        viewModel.mediaList.observe(viewLifecycleOwner) {
             if (mProjectId != EMPTY_ID) {
                 it?.forEach { media ->
                     if (media.status == Media.STATUS_LOCAL) {
                         return@forEach
                     }
                 }
+
                 initLayout(it ?: listOf())
             }
-        })
+        }
     }
 
     private fun initLayout(mediaList: List<Media>) {
         val rView = RecyclerView(requireContext())
         rView.layoutManager = LinearLayoutManager(activity)
         rView.setHasFixedSize(true)
-        _mBinding?.mediacontainer?.addView(rView)
+
+        mBinding?.mediacontainer?.addView(rView)
 
         val listMediaArray = ArrayList(mediaList)
 
-        mMediaAdapter =
-            MediaAdapter(
+        mMediaAdapter = MediaAdapter(
                 requireContext(),
                 R.layout.activity_media_list_row_short,
                 listMediaArray,
                 rView,
                 object : OnStartDragListener {
+
                     override fun onStartDrag(viewHolder: RecyclerView.ViewHolder?) {
                         if (viewHolder != null) mItemTouchHelper.startDrag(viewHolder)
                     }
-
                 })
         mMediaAdapter?.setDoImageFade(false)
         rView.adapter = mMediaAdapter
+
         mItemTouchHelper.attachToRecyclerView(rView)
     }
 
@@ -132,21 +132,18 @@ open class MediaListFragment : Fragment() {
     }
 
     open fun refresh() {
-        var listMedia: List<Media>? = if (mProjectId == -1L) {
+        val listMedia = if (mProjectId == -1L) {
             getMediaByStatus(mStatuses, Media.ORDER_PRIORITY)
         } else {
             getMediaByProject(mProjectId)
         }
-        listMedia?.let {
-            val listMediaArray = ArrayList(it)
-            mMediaAdapter?.updateData(listMediaArray)
-        } ?: run {
-            mMediaAdapter?.updateData(arrayListOf())
-        }
+
+        mMediaAdapter?.updateData((listMedia ?: emptyList()) as ArrayList<Media>)
     }
 
     override fun onResume() {
         super.onResume()
+
         refresh()
     }
 

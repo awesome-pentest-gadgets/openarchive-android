@@ -2,16 +2,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="60dp">
-
+    android:layout_height="60dp"
+    android:layout_margin="@dimen/activity_row_padding"
+    android:orientation="vertical">
 
     <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/ivStatusGroup"
-        >
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
         <ProgressBar
             android:id="@+id/progressBar"
@@ -21,12 +20,10 @@
             android:layout_centerInParent="true"
             android:indeterminate="false"
             android:max="100"
+            android:padding="10dp"
             android:progress="10"
             android:progressDrawable="@drawable/circle_progressbar"
-            android:secondaryProgress="0"
-            android:padding="10dp"
-            />
-
+            android:secondaryProgress="0" />
 
         <TextView
             android:id="@+id/txtProgress"
@@ -34,72 +31,70 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/progressBar"
             android:layout_centerInParent="true"
-            android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="0%"
-            />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            tools:ignore="HardcodedText" />
+
     </RelativeLayout>
 
     <LinearLayout
-        android:layout_width="80dp"
-        android:layout_height="80dp"
         android:id="@+id/ivGroup"
-        android:orientation="vertical"
-        android:layout_toRightOf="@+id/ivStatusGroup"
-
-        >
-    <ImageView android:id="@+id/ivIcon"
-               android:layout_width="80dp"
-               android:layout_height="60dp"
-               android:scaleType="centerCrop"
-               android:layout_marginTop="3dp"
-               android:src="@drawable/no_thumbnail"
-        />
-
-    <com.github.derlio.waveform.SimpleWaveformView
-        android:id="@+id/event_item_sound"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        app:waveformColor="#999999"
-        app:indicatorColor="#aa0000"
-        android:visibility="gone"
-        android:layout_marginTop="3dp"
+        android:layout_toEndOf="@+id/ivStatusGroup"
+        android:orientation="vertical">
 
-        />
+        <ImageView
+            android:id="@+id/ivIcon"
+            android:layout_width="80dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="3dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/no_thumbnail"
+            tools:ignore="ContentDescription" />
+
+        <com.github.derlio.waveform.SimpleWaveformView
+            android:id="@+id/event_item_sound"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginTop="3dp"
+            android:visibility="gone"
+            app:indicatorColor="#aa0000"
+            app:waveformColor="#999999"
+
+            />
     </LinearLayout>
 
-    <TextView android:id="@+id/tvTitle"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_toRightOf="@+id/ivGroup"
-              android:layout_marginLeft="8dp"
-              tools:text="This is the title"
-              android:textStyle="bold"
-              android:singleLine="true"/>
-
-    <TextView android:id="@+id/tvCreateDate"
-        android:layout_below="@+id/tvTitle"
-        android:layout_toRightOf="@+id/ivGroup"
-
+    <TextView
+        android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:singleLine="true"
-        tools:text="This is the date"
-        android:layout_marginLeft="8dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_toEndOf="@+id/ivGroup"
+        android:singleLine="true"
+        android:textStyle="bold"
+        tools:text="This is the title"
+        tools:ignore="RelativeOverlap" />
 
-
-        />
+    <TextView
+        android:id="@+id/tvCreateDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvTitle"
+        android:layout_marginStart="8dp"
+        android:layout_toEndOf="@+id/ivGroup"
+        android:singleLine="true"
+        tools:text="This is the date" />
 
     <ImageView
         android:id="@+id/handle"
         android:layout_width="?listPreferredItemHeight"
         android:layout_height="match_parent"
-        android:layout_gravity="center_vertical|right"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="center_vertical|end"
         android:scaleType="center"
         app:srcCompat="@drawable/ic_reorder_black_24dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-
-        />
+        tools:ignore="ContentDescription" />
 
 </RelativeLayout>
 

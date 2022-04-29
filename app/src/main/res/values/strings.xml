@@ -244,7 +244,8 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="action_plus">+</string>
     <string name="create_a_new_project">Create a new project</string>
-    <string name="title_uploads">Uploads</string>
+    <string name="title_uploading">Uploading… %d left</string>
+    <string name="title_uploading_done">Done</string>
 
     <string name="title_activity_batch_media_review">Preview</string>
     <string name="action_upload">Upload</string>

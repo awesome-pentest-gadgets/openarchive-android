@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package net.opendasharchive.openarchive.db
 
 import com.google.gson.Gson
@@ -21,10 +23,13 @@ data class Media(
     var location: String = EMPTY_STRING,
     private var tags: String = EMPTY_STRING,
     var licenseUrl: String? = null,
+
     @SerializedName(value = "mediaHashBytes")
     var mediaHash: ByteArray = byteArrayOf(),
+
     @SerializedName(value = "mediaHash")
     var mediaHashString: String = EMPTY_STRING,
+
     var status: Int = 0,
     var statusMessage: String = EMPTY_STRING,
     var projectId: Long = 0,
@@ -36,17 +41,17 @@ data class Media(
     var selected: Boolean = false
 ) : SugarRecord() {
 
-    enum class MEDIA_TYPE {
+    enum class MediaType {
         AUDIO, IMAGE, VIDEO, FILE
     }
 
-    fun getFormattedCreateDate(): String? {
+    fun getFormattedCreateDate(): String {
         return createDate?.let {
             SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(it)
         } ?: EMPTY_STRING
     }
 
-    fun getTags(): String? {
+    fun getTags(): String {
         return tags
     }
 
@@ -100,6 +105,66 @@ data class Media(
         return media.delete()
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Media
+
+        if (originalFilePath != other.originalFilePath) return false
+        if (mimeType != other.mimeType) return false
+        if (createDate != other.createDate) return false
+        if (updateDate != other.updateDate) return false
+        if (uploadDate != other.uploadDate) return false
+        if (serverUrl != other.serverUrl) return false
+        if (title != other.title) return false
+        if (description != other.description) return false
+        if (author != other.author) return false
+        if (location != other.location) return false
+        if (tags != other.tags) return false
+        if (licenseUrl != other.licenseUrl) return false
+        if (!mediaHash.contentEquals(other.mediaHash)) return false
+        if (mediaHashString != other.mediaHashString) return false
+        if (status != other.status) return false
+        if (statusMessage != other.statusMessage) return false
+        if (projectId != other.projectId) return false
+        if (collectionId != other.collectionId) return false
+        if (contentLength != other.contentLength) return false
+        if (progress != other.progress) return false
+        if (flag != other.flag) return false
+        if (priority != other.priority) return false
+        if (selected != other.selected) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = originalFilePath.hashCode()
+        result = 31 * result + mimeType.hashCode()
+        result = 31 * result + (createDate?.hashCode() ?: 0)
+        result = 31 * result + (updateDate?.hashCode() ?: 0)
+        result = 31 * result + (uploadDate?.hashCode() ?: 0)
+        result = 31 * result + serverUrl.hashCode()
+        result = 31 * result + title.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + author.hashCode()
+        result = 31 * result + location.hashCode()
+        result = 31 * result + tags.hashCode()
+        result = 31 * result + (licenseUrl?.hashCode() ?: 0)
+        result = 31 * result + mediaHash.contentHashCode()
+        result = 31 * result + mediaHashString.hashCode()
+        result = 31 * result + status
+        result = 31 * result + statusMessage.hashCode()
+        result = 31 * result + projectId.hashCode()
+        result = 31 * result + collectionId.hashCode()
+        result = 31 * result + contentLength.hashCode()
+        result = 31 * result + progress.hashCode()
+        result = 31 * result + flag.hashCode()
+        result = 31 * result + priority
+        result = 31 * result + selected.hashCode()
+        return result
+    }
+
     companion object {
         const val STATUS_NEW = 0
         const val STATUS_LOCAL = 1
@@ -113,8 +178,8 @@ data class Media(
 
         const val ORDER_PRIORITY = "PRIORITY DESC"
         private val WHERE_NOT_DELETED = arrayOf(STATUS_UPLOADED.toString() + "")
-        private val PRIORITY_DESC = "priority DESC"
-        private val ORDER_STATUS_AND_PRIORITY = "STATUS, PRIORITY DESC"
+        private const val PRIORITY_DESC = "priority DESC"
+        private const val ORDER_STATUS_AND_PRIORITY = "STATUS, PRIORITY DESC"
 
 
         fun getMediaByProjectAndCollection(projectId: Long, collectionId: Long): List<Media>? {
@@ -192,7 +257,5 @@ data class Media(
                 null
             }
         }
-
     }
-
 }

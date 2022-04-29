@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -25,12 +26,15 @@ import static net.opendasharchive.openarchive.MainActivity.INTENT_FILTER_NAME;
 import static net.opendasharchive.openarchive.util.Constants.EMPTY_ID;
 import static net.opendasharchive.openarchive.util.Constants.PROJECT_ID;
 
+import java.util.List;
+
 
 public class UploadManagerActivity extends AppCompatActivity {
 
-    MediaListFragment mFrag;
-    MenuItem mMenuEdit;
-    private long projectId = EMPTY_ID;
+    private MediaListFragment mFrag;
+    private MenuItem mMenuEdit;
+
+    private boolean isEditMode = false;
 
 
     @Override
@@ -39,15 +43,17 @@ public class UploadManagerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_upload_manager);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(getString(R.string.title_uploads));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        projectId = getIntent().getLongExtra(PROJECT_ID, EMPTY_ID);
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) ab.setDisplayHomeAsUpEnabled(true);
+        updateTitle();
 
-        mFrag = (MediaListFragment) getSupportFragmentManager().findFragmentById(R.id.fragUploadManager);
-        ((MediaListFragment) mFrag).setProjectId(projectId);
+        MediaListFragment fragment = (MediaListFragment) getSupportFragmentManager().findFragmentById(R.id.fragUploadManager);
+        if (fragment != null) {
+            fragment.setProjectId(getIntent().getLongExtra(PROJECT_ID, EMPTY_ID));
+            mFrag = fragment;
+        }
     }
-
 
     @Override
     protected void onResume() {
@@ -59,7 +65,6 @@ public class UploadManagerActivity extends AppCompatActivity {
                 new IntentFilter(INTENT_FILTER_NAME));
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -67,10 +72,11 @@ public class UploadManagerActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
     }
 
-
-    // Our handler for received Intents. This will be called whenever an Intent
-// with an action named "custom-event-name" is broadcasted.
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+    /**
+     * Our handler for received Intents. This will be called whenever an Intent
+     * with an action named "custom-event-name" is broadcasted.
+     */
+    private final BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -78,34 +84,25 @@ public class UploadManagerActivity extends AppCompatActivity {
             Log.d("receiver", "Updating media");
 
             int status = intent.getIntExtra(MESSAGE_KEY_STATUS, -1);
-            if (status == (Media.STATUS_UPLOADED))
-                mFrag.refresh();
-            else if (status == (Media.STATUS_UPLOADING)) {
-                long mediaId = intent.getLongExtra(MESSAGE_KEY_MEDIA_ID, -1);
-                long progress = intent.getLongExtra(MESSAGE_KEY_PROGRESS, -1);
 
-                if (mediaId != -1) {
-                    mFrag.updateItem(mediaId, progress);
-                }
+            switch (status) {
+                case Media.STATUS_UPLOADED:
+                    mFrag.refresh();
 
-            }
-            else if (status == Media.STATUS_ERROR) {
+                case Media.STATUS_UPLOADING:
+                    long mediaId = intent.getLongExtra(MESSAGE_KEY_MEDIA_ID, -1);
+                    long progress = intent.getLongExtra(MESSAGE_KEY_PROGRESS, -1);
 
-                OpenArchiveApp oApp = ((OpenArchiveApp)getApplication());
+                    if (mediaId != -1) mFrag.updateItem(mediaId, progress);
 
-                if (!oApp.hasCleanInsightsConsent())
-                {
-                    oApp.showCleanInsightsConsent(UploadManagerActivity.this);
-
-                }
-
-
+                case Media.STATUS_ERROR:
+                    OpenArchiveApp app = (OpenArchiveApp) getApplication();
+                    if (!app.hasCleanInsightsConsent()) app.showCleanInsightsConsent(UploadManagerActivity.this);
             }
 
+            updateTitle();
         }
     };
-
-    boolean isEditMode = false;
 
     public void toggleEditMode() {
         isEditMode = !isEditMode;
@@ -126,8 +123,8 @@ public class UploadManagerActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_upload, menu);
         mMenuEdit = menu.findItem(R.id.menu_edit);
-        return super.onCreateOptionsMenu(menu);
 
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -137,20 +134,30 @@ public class UploadManagerActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        switch (item.getItemId()) {
+        if (id == android.R.id.home) {
+            finish();
+            return true;
+        }
 
-            case android.R.id.home:
-                finish();
-                return true;
-
-
-            case R.id.menu_edit:
-                toggleEditMode();
-                return true;
-
-
+        if (id == R.id.menu_edit) {
+            toggleEditMode();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateTitle() {
+        int count = 0;
+        List<Media> media = Media.Companion.getMediaByStatus(
+                new long[] { Media.STATUS_UPLOADING, Media.STATUS_QUEUED, Media.STATUS_ERROR },
+                Media.ORDER_PRIORITY);
+        if (media != null) count = media.size();
+
+        String title = getString(R.string.title_uploading_done);
+        if (count > 0) title = getString(R.string.title_uploading, count);
+
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) ab.setTitle(title);
     }
 }
