@@ -165,19 +165,23 @@ data class Media(
         return result
     }
 
-    companion object {
-        const val STATUS_NEW = 0
-        const val STATUS_LOCAL = 1
-        const val STATUS_QUEUED = 2
-        const val STATUS_PUBLISHED = 3
-        const val STATUS_UPLOADING = 4
-        const val STATUS_UPLOADED = 5
-        const val STATUS_DELETE_REMOTE = 7
-        const val STATUS_ERROR = 9
-        //public final static int STATUS_ARCHIVED = 5;
+    enum class Status(val value: Int) {
+        NEW(0),
+        LOCAL(1),
+        QUEUED(2),
+        PUBLISHED(3),
+        UPLOADING(4),
+        UPLOADED(5),
+        DELETE_REMOTE(7),
+        ERROR(9);
 
+        override fun toString(): String {
+            return value.toString()
+        }
+    }
+    companion object {
         const val ORDER_PRIORITY = "PRIORITY DESC"
-        private val WHERE_NOT_DELETED = arrayOf(STATUS_UPLOADED.toString() + "")
+        private val WHERE_NOT_DELETED = arrayOf(Status.UPLOADED.value.toString())
         private const val PRIORITY_DESC = "priority DESC"
         private const val ORDER_STATUS_AND_PRIORITY = "STATUS, PRIORITY DESC"
 
@@ -195,31 +199,22 @@ data class Media(
             )
         }
 
-        fun getMediaByStatus(status: Long): List<Media>? {
-            val values = arrayOf(status.toString() + EMPTY_STRING)
+        fun getMediaByStatus(status: Status): List<Media>? {
             return find(
                 Media::class.java,
                 "status = ?",
-                values,
+                arrayOf(status.toString()),
                 EMPTY_STRING,
                 "STATUS DESC",
                 EMPTY_STRING
             )
         }
 
-        fun getMediaByStatus(statuses: LongArray, order: String?): List<Media>? {
-            val values = arrayOfNulls<String>(statuses.size)
-            var idx = 0
-            for (status in statuses) values[idx++] = status.toString() + EMPTY_STRING
-            val sbWhere = StringBuffer()
-            for (i in values.indices) {
-                sbWhere.append("status = ?")
-                if (i + 1 < values.size) sbWhere.append(" OR ")
-            }
+        fun getMediaByStatus(statuses: Array<Status>, order: String?): List<Media>? {
             return find(
                 Media::class.java,
-                sbWhere.toString(),
-                values,
+                statuses.joinToString(", ", "status IN (", ")") { "?" },
+                statuses.map { it.toString() }.toTypedArray(),
                 EMPTY_STRING,
                 order,
                 EMPTY_STRING

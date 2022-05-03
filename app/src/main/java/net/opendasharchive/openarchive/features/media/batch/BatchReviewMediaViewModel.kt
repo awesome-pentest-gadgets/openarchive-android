@@ -25,7 +25,7 @@ class BatchReviewMediaViewModel : ViewModel() {
                 media.setTags(tags)
                 val project = Project.getById(media.projectId)
                 media.licenseUrl = project?.licenseUrl
-                if (media.status == Media.STATUS_NEW) media.status = Media.STATUS_LOCAL
+                if (media.status == Media.Status.NEW.value) media.status = Media.Status.LOCAL.value
                 media.save()
             }
         }

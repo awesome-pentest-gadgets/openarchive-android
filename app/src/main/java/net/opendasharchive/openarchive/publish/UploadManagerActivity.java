@@ -85,19 +85,18 @@ public class UploadManagerActivity extends AppCompatActivity {
 
             int status = intent.getIntExtra(MESSAGE_KEY_STATUS, -1);
 
-            switch (status) {
-                case Media.STATUS_UPLOADED:
-                    mFrag.refresh();
+            if (status == Media.Status.UPLOADED.getValue()) {
+                mFrag.refresh();
+            }
+            else if (status == Media.Status.UPLOADING.getValue()) {
+                long mediaId = intent.getLongExtra(MESSAGE_KEY_MEDIA_ID, -1);
+                long progress = intent.getLongExtra(MESSAGE_KEY_PROGRESS, -1);
 
-                case Media.STATUS_UPLOADING:
-                    long mediaId = intent.getLongExtra(MESSAGE_KEY_MEDIA_ID, -1);
-                    long progress = intent.getLongExtra(MESSAGE_KEY_PROGRESS, -1);
-
-                    if (mediaId != -1) mFrag.updateItem(mediaId, progress);
-
-                case Media.STATUS_ERROR:
-                    OpenArchiveApp app = (OpenArchiveApp) getApplication();
-                    if (!app.hasCleanInsightsConsent()) app.showCleanInsightsConsent(UploadManagerActivity.this);
+                if (mediaId != -1) mFrag.updateItem(mediaId, progress);
+            }
+            else if (status == Media.Status.ERROR.getValue()) {
+                OpenArchiveApp app = (OpenArchiveApp) getApplication();
+                if (!app.hasCleanInsightsConsent()) app.showCleanInsightsConsent(UploadManagerActivity.this);
             }
 
             updateTitle();
@@ -150,7 +149,7 @@ public class UploadManagerActivity extends AppCompatActivity {
     private void updateTitle() {
         int count = 0;
         List<Media> media = Media.Companion.getMediaByStatus(
-                new long[] { Media.STATUS_UPLOADING, Media.STATUS_QUEUED, Media.STATUS_ERROR },
+                new Media.Status[] { Media.Status.UPLOADING, Media.Status.QUEUED, Media.Status.ERROR },
                 Media.ORDER_PRIORITY);
         if (media != null) count = media.size();
 

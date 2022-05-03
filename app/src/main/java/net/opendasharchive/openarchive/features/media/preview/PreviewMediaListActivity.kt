@@ -103,7 +103,7 @@ class PreviewMediaListActivity : AppCompatActivity() {
     private fun batchUpload() {
         val listMedia = mFrag?.getMediaList() ?: listOf()
         for (media in listMedia) {
-            media.status = Media.STATUS_QUEUED
+            media.status = Media.Status.QUEUED.value
             media.save()
         }
         //viewModel.uploadFiles()

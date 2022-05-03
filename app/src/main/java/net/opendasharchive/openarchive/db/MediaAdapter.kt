@@ -111,7 +111,7 @@ class MediaAdapter(
         for (i in data.indices) {
             val item = data[i]
             if (item.id == mediaId) {
-                item.status = Media.STATUS_UPLOADING
+                item.status = Media.Status.UPLOADING.value
                 item.progress = progress
                 notifyItemChanged(i)
                 return true
@@ -174,7 +174,7 @@ class MediaAdapter(
         if (isEditMode) {
             val mediaToDismiss = data[pos]
             data.remove(mediaToDismiss)
-            mediaToDismiss.status = Media.STATUS_LOCAL
+            mediaToDismiss.status = Media.Status.LOCAL.value
             mediaToDismiss.save()
         }
         notifyDataSetChanged()

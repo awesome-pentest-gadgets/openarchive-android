@@ -120,8 +120,8 @@ class ReviewMediaActivity : AppCompatActivity() {
     private fun updateFlagState() {
         if (mMedia.flag) mBinding.reviewMetadata.ivEditFlag.setImageResource(R.drawable.ic_flag_selected) else mBinding.reviewMetadata.ivEditFlag.setImageResource(R.drawable.ic_flag_unselected)
         if (mMedia.flag) mBinding.reviewMetadata.tvFlagLbl.setText(R.string.status_flagged) else mBinding.reviewMetadata.tvFlagLbl.setText(R.string.hint_flag)
-        if ((mMedia.status != Media.STATUS_LOCAL
-                        && mMedia.status != Media.STATUS_NEW) && !mMedia.flag) {
+        if ((mMedia.status != Media.Status.LOCAL.value
+                        && mMedia.status != Media.Status.NEW.value) && !mMedia.flag) {
             mBinding.reviewMetadata.ivEditFlag.visibility = View.GONE
             mBinding.reviewMetadata.tvFlagLbl.visibility = View.GONE
         }
@@ -143,7 +143,7 @@ class ReviewMediaActivity : AppCompatActivity() {
                     ivEditLocation.setImageResource(R.drawable.ic_location_selected)
                 }
 
-                if (!mMedia.getTags().isNullOrEmpty()) {
+                if (mMedia.getTags().isNotEmpty()) {
                     tvTagsLbl.setText(mMedia.getTags())
                     ivEditTags.setImageResource(R.drawable.ic_tag_selected)
                 }
@@ -152,15 +152,15 @@ class ReviewMediaActivity : AppCompatActivity() {
                 tvCcLicense.setText(mMedia.licenseUrl)
             }
 
-            if (mMedia.status != Media.STATUS_LOCAL
-                    && mMedia.status != Media.STATUS_NEW) {
+            if (mMedia.status != Media.Status.LOCAL.value
+                    && mMedia.status != Media.Status.NEW.value) {
 
-                if (mMedia.status == Media.STATUS_UPLOADED || mMedia.status == Media.STATUS_PUBLISHED) {
+                if (mMedia.status == Media.Status.UPLOADED.value || mMedia.status == Media.Status.PUBLISHED.value) {
                     //NO-OP
-                } else if (mMedia.status == Media.STATUS_QUEUED) {
+                } else if (mMedia.status == Media.Status.QUEUED.value) {
                     tvUrl.text = "Waiting for upload..."
                     tvUrl.visibility = View.VISIBLE
-                } else if (mMedia.status == Media.STATUS_UPLOADING) {
+                } else if (mMedia.status == Media.Status.UPLOADING.value) {
                     tvUrl.text = "Uploading now..."
                     tvUrl.visibility = View.VISIBLE
                 }
@@ -183,7 +183,7 @@ class ReviewMediaActivity : AppCompatActivity() {
                 }
 
                 reviewMetadata.tvTagsLbl.isEnabled = false
-                if (mMedia.getTags().isNullOrEmpty()) {
+                if (mMedia.getTags().isEmpty()) {
                     reviewMetadata.ivEditTags.visibility = View.GONE
                     reviewMetadata.tvTagsLbl.hint = Constants.EMPTY_STRING
                 }
@@ -199,7 +199,7 @@ class ReviewMediaActivity : AppCompatActivity() {
             }
 
             if (menuPublish != null) {
-                if (mMedia.status == Media.STATUS_LOCAL) {
+                if (mMedia.status == Media.Status.LOCAL.value) {
                     menuPublish?.isVisible = true
                     menuShare?.isVisible = false
                 } else {
@@ -227,7 +227,6 @@ class ReviewMediaActivity : AppCompatActivity() {
 
     private fun saveMedia() {
         //if deleted
-        if (mMedia == null) return
         if (mBinding.reviewMetadata.tvTitleLbl.text.isNotEmpty()) mMedia.title = mBinding.reviewMetadata.tvTitleLbl.text.toString() else {
             //use the file name if the user doesn't set a title
             mMedia.title = File(mMedia.originalFilePath).name
@@ -237,7 +236,7 @@ class ReviewMediaActivity : AppCompatActivity() {
         mMedia.location = mBinding.reviewMetadata.tvLocationLbl.text.toString()
         mMedia.setTags(mBinding.reviewMetadata.tvTagsLbl.text.toString())
         setLicense()
-        if (mMedia.status == Media.STATUS_NEW) mMedia.status = Media.STATUS_LOCAL
+        if (mMedia.status == Media.Status.NEW.value) mMedia.status = Media.Status.LOCAL.value
         mMedia.save()
     }
 
@@ -250,7 +249,7 @@ class ReviewMediaActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_review_media, menu)
         menuShare = menu.findItem(R.id.menu_item_share)
         menuPublish = menu.findItem(R.id.menu_upload)
-        if (mMedia.status != Media.STATUS_UPLOADED) {
+        if (mMedia.status != Media.Status.UPLOADED.value) {
             menuPublish?.isVisible = true
         } else {
             menuShare?.isVisible = true
@@ -320,7 +319,7 @@ class ReviewMediaActivity : AppCompatActivity() {
         // if user doesn't have an account
         if (space != null) {
             //mark queued
-            mMedia.status = Media.STATUS_QUEUED
+            mMedia.status = Media.Status.QUEUED.value
             saveMedia()
             bindMedia()
             viewModel.applyMedia()
@@ -437,8 +436,8 @@ class ReviewMediaActivity : AppCompatActivity() {
 
     private fun deleteMedia() {
         val media: Media = findById<Media>(Media::class.java, currentMediaId)
-        if (!media.serverUrl.isNullOrEmpty() || media.status == Media.STATUS_UPLOADED || media.status == Media.STATUS_PUBLISHED) {
-            mMedia.status = Media.STATUS_DELETE_REMOTE
+        if (media.serverUrl.isNotEmpty() || media.status == Media.Status.UPLOADED.value || media.status == Media.Status.PUBLISHED.value) {
+            mMedia.status = Media.Status.DELETE_REMOTE.value
             mMedia.save()
             //start upload queue, which will also handle the deletes
             (application as OpenArchiveApp).uploadQueue()

@@ -143,7 +143,7 @@ class MediaGridFragment : MediaListFragment() {
         holder: SectionViewHolder?
     ) {
         listMedia?.forEach { media ->
-            if (media.status == Media.STATUS_LOCAL) {
+            if (media.status == Media.Status.LOCAL.value) {
                 holder?.let {
                     holder.sectionStatus?.text = getString(R.string.status_ready_to_upload)
                     holder.sectionTimestamp?.text =
@@ -159,12 +159,12 @@ class MediaGridFragment : MediaListFragment() {
                     }
                 }
                 return@forEach
-            } else if (media.status == Media.STATUS_QUEUED || media.status == Media.STATUS_UPLOADING) {
+            } else if (media.status == Media.Status.QUEUED.value || media.status == Media.Status.UPLOADING.value) {
                 holder?.let {
                     holder.sectionStatus?.text = getString(R.string.header_uploading)
                     var uploadedCount = 0
                     listMedia.forEach { localMedia ->
-                        if (localMedia.status == Media.STATUS_UPLOADED) uploadedCount++
+                        if (localMedia.status == Media.Status.UPLOADED.value) uploadedCount++
                     }
                     holder.sectionTimestamp?.text =
                         uploadedCount.toString() + " " + getString(R.string.label_out_of) + " " + listMedia.size + ' ' + getString(

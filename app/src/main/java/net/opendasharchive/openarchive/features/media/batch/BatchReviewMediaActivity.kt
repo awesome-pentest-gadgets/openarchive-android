@@ -74,8 +74,8 @@ class BatchReviewMediaActivity : AppCompatActivity() {
         if (media.flag) mBinding.archiveMetadataLayout.tvFlagLbl.setText(R.string.status_flagged) else mBinding.archiveMetadataLayout.tvFlagLbl.setText(
             R.string.hint_flag
         )
-        if ((media.status != Media.STATUS_LOCAL
-                    && media.status != Media.STATUS_NEW) && !media.flag
+        if ((media.status != Media.Status.LOCAL.value
+                    && media.status != Media.Status.NEW.value) && !media.flag
         ) {
             mBinding.archiveMetadataLayout.ivEditFlag.hide()
             mBinding.archiveMetadataLayout.tvFlagLbl.hide()
@@ -105,7 +105,7 @@ class BatchReviewMediaActivity : AppCompatActivity() {
                     ivEditLocation.setImageResource(R.drawable.ic_location_selected)
                 }
 
-                if (!media.getTags().isNullOrEmpty()) {
+                if (media.getTags().isNotEmpty()) {
                     tvTagsLbl.setText(media.getTags())
                     ivEditTags.setImageResource(R.drawable.ic_tag_selected)
                 }
@@ -114,13 +114,13 @@ class BatchReviewMediaActivity : AppCompatActivity() {
                 tvCcLicense.setText(media.licenseUrl)
             }
 
-            if (media.status != Media.STATUS_LOCAL && media.status != Media.STATUS_NEW) {
-                if (media.status == Media.STATUS_UPLOADED || media.status == Media.STATUS_PUBLISHED) {
+            if (media.status != Media.Status.LOCAL.value && media.status != Media.Status.NEW.value) {
+                if (media.status == Media.Status.UPLOADED.value || media.status == Media.Status.PUBLISHED.value) {
                     // NO-OP
-                } else if (media.status == Media.STATUS_QUEUED) {
+                } else if (media.status == Media.Status.QUEUED.value) {
                     tvUrl.text = getString(R.string.batch_waiting_for_upload)
                     tvUrl.show()
-                } else if (media.status == Media.STATUS_UPLOADING) {
+                } else if (media.status == Media.Status.UPLOADING.value) {
                     tvUrl.text = getString(R.string.batch_uploading_now)
                     tvUrl.show()
                 }
@@ -145,7 +145,7 @@ class BatchReviewMediaActivity : AppCompatActivity() {
 
                     tvTagsLbl.isEnabled = false
 
-                    if (media.getTags().isNullOrEmpty()) {
+                    if (media.getTags().isEmpty()) {
                         ivEditTags.hide()
                         tvTagsLbl.hint = EMPTY_STRING
                     }
@@ -253,11 +253,6 @@ class BatchReviewMediaActivity : AppCompatActivity() {
         super.onResume()
         init()
         bindMedia()
-    }
-
-    override fun onDestroy() {
-        // Unregister since the activity is about to be closed.
-        super.onDestroy()
     }
 
     companion object {

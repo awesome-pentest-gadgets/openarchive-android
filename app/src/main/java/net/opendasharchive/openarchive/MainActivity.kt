@@ -8,7 +8,6 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
@@ -42,12 +41,12 @@ import net.opendasharchive.openarchive.db.ProjectAdapter
 import net.opendasharchive.openarchive.db.Space
 import net.opendasharchive.openarchive.db.Space.Companion.getAllAsList
 import net.opendasharchive.openarchive.db.Space.Companion.getCurrentSpace
-import net.opendasharchive.openarchive.features.settings.SpaceSettingsActivity
 import net.opendasharchive.openarchive.features.media.list.MediaListFragment
 import net.opendasharchive.openarchive.features.media.preview.PreviewMediaListActivity
 import net.opendasharchive.openarchive.features.media.review.ReviewMediaActivity
 import net.opendasharchive.openarchive.features.onboarding.OAAppIntro
 import net.opendasharchive.openarchive.features.projects.AddProjectActivity
+import net.opendasharchive.openarchive.features.settings.SpaceSettingsActivity
 import net.opendasharchive.openarchive.publish.UploadManagerActivity
 import net.opendasharchive.openarchive.ui.BadgeDrawable
 import net.opendasharchive.openarchive.util.*
@@ -83,10 +82,12 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
         override fun onReceive(context: Context, intent: Intent) {
             // Get extra data included in the Intent
             Log.d("receiver", "Updating media")
+
             val mediaId = intent.getLongExtra(SiteController.MESSAGE_KEY_MEDIA_ID, -1)
             val progress = intent.getLongExtra(SiteController.MESSAGE_KEY_PROGRESS, -1)
             val status = intent.getIntExtra(SiteController.MESSAGE_KEY_STATUS, -1)
-            if (status == Media.STATUS_UPLOADED) {
+
+            if (status == Media.Status.UPLOADED.value) {
                 mBinding.pager.let {
                     if (mBinding.pager.currentItem > 0) {
                         val frag =
@@ -95,7 +96,7 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
                         updateMenu()
                     }
                 }
-            } else if (status == Media.STATUS_UPLOADING) {
+            } else if (status == Media.Status.UPLOADING.value) {
                 mBinding.pager.let {
                     if (mediaId != -1L && mBinding.pager.currentItem > 0) {
                         val frag =
@@ -127,7 +128,10 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
         mPagerAdapter = ProjectAdapter(this, supportFragmentManager)
 
         mSnackBar =
-            mBinding.pager.createSnackBar(getString(R.string.importing_media), Snackbar.LENGTH_INDEFINITE)
+            mBinding.pager.createSnackBar(
+                getString(R.string.importing_media),
+                Snackbar.LENGTH_INDEFINITE
+            )
         val snackView = mSnackBar?.view as? SnackbarLayout
         snackView?.addView(ProgressBar(this))
 
@@ -135,7 +139,8 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
             val listProjects = getAllBySpace(it.id, false)
             mPagerAdapter.updateData(listProjects)
             mBinding.pager.adapter = mPagerAdapter
-            if (!listProjects.isNullOrEmpty()) mBinding.pager.currentItem = 1 else mBinding.pager.currentItem = 0
+            if (!listProjects.isNullOrEmpty()) mBinding.pager.currentItem =
+                1 else mBinding.pager.currentItem = 0
             mBinding.tabs.removeOnTabSelectedListener(this)
         } ?: run {
             mBinding.pager.adapter = mPagerAdapter
@@ -160,7 +165,8 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
                 position: Int,
                 positionOffset: Float,
                 positionOffsetPixels: Int
-            ) {}
+            ) {
+            }
 
             override fun onPageSelected(position: Int) {
                 lastTab = position
@@ -206,7 +212,8 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
             mPagerAdapter = ProjectAdapter(this, supportFragmentManager)
             mPagerAdapter.updateData(listProjects)
             mBinding.pager.adapter = mPagerAdapter
-            if (!listProjects.isNullOrEmpty()) mBinding.pager.currentItem = 1 else mBinding.pager.currentItem = 0
+            if (!listProjects.isNullOrEmpty()) mBinding.pager.currentItem =
+                1 else mBinding.pager.currentItem = 0
         }
         updateMenu()
     }
@@ -214,7 +221,8 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
     private fun refreshCurrentProject() {
         mBinding.pager.let {
             if (mBinding.pager.currentItem > 0) {
-                val frag = mPagerAdapter.getRegisteredFragment(mBinding.pager.currentItem) as? MediaListFragment
+                val frag =
+                    mPagerAdapter.getRegisteredFragment(mBinding.pager.currentItem) as? MediaListFragment
                 frag?.refresh()
             }
             updateMenu()
@@ -279,11 +287,10 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
 
     private fun updateMenu() {
         mMenuUpload?.let {
-            val mStatuses = longArrayOf(
-                Media.STATUS_UPLOADING.toLong(),
-                Media.STATUS_QUEUED.toLong(), Media.STATUS_ERROR.toLong()
-            )
-            val uploadCount = getMediaByStatus(mStatuses, Media.ORDER_PRIORITY)?.size ?: 0
+            val uploadCount = getMediaByStatus(
+                arrayOf(Media.Status.UPLOADING, Media.Status.QUEUED, Media.Status.ERROR),
+                Media.ORDER_PRIORITY)?.size ?: 0
+
             if (uploadCount > 0) {
                 it.isVisible = true
                 val bg = BadgeDrawable(this)
@@ -355,8 +362,9 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
         media.mimeType = mimeType ?: Constants.EMPTY_STRING
         media.createDate = createDate
         media.updateDate = media.createDate
-        media.status = Media.STATUS_LOCAL
-        media.mediaHashString = HashUtils.getSHA256FromFileContent(contentResolver.openInputStream(uri))
+        media.status = Media.Status.LOCAL.value
+        media.mediaHashString =
+            HashUtils.getSHA256FromFileContent(contentResolver.openInputStream(uri))
         media.projectId = project.id
         media.title = title
         media.save()
@@ -557,6 +565,7 @@ class MainActivity : AppCompatActivity(), OnTabSelectedListener {
             }
         }
     }
+
     companion object {
         const val INTENT_FILTER_NAME = "MEDIA_UPDATED"
     }

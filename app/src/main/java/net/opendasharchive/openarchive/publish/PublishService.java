@@ -134,7 +134,7 @@ public class PublishService extends Service implements Runnable {
             Date datePublish = new Date();
 
             String where = "status = ? OR status = ?";
-            String[] whereArgs = {Media.STATUS_QUEUED + "", Media.STATUS_UPLOADING + ""};
+            String[] whereArgs = { Media.Status.QUEUED.toString(), Media.Status.UPLOADING.toString() };
 
             while ((results = Media.find(Media.class, where, whereArgs, null, "priority DESC", null)).size() > 0 && keepUploading) {
 
@@ -144,10 +144,10 @@ public class PublishService extends Service implements Runnable {
                     Project proj = Project.findById(Project.class, coll.getProjectId());
 
                     if (proj != null) {
-                        if (media.getStatus() != Media.STATUS_UPLOADING) {
+                        if (media.getStatus() != Media.Status.UPLOADING.getValue()) {
                             media.setUploadDate(datePublish);
                             media.setProgress(0); //should we reset this?
-                            media.setStatus(Media.STATUS_UPLOADING);
+                            media.setStatus(Media.Status.UPLOADING.getValue());
                             media.setStatusMessage(Constants.EMPTY_STRING);
                         }
 
@@ -172,13 +172,13 @@ public class PublishService extends Service implements Runnable {
 
                             media.setStatusMessage(err);
 
-                            media.setStatus(Media.STATUS_ERROR);
+                            media.setStatus(Media.Status.ERROR.getValue());
                             media.save();
 
                         }
                     } else {
                         //project was deleted, so we should stop uploading
-                        media.setStatus(Media.STATUS_LOCAL);
+                        media.setStatus(Media.Status.LOCAL.getValue());
 
                     }
 
@@ -188,7 +188,7 @@ public class PublishService extends Service implements Runnable {
 
             }
 
-            results = Media.find(Media.class, "status = ?", Media.STATUS_DELETE_REMOTE + "");
+            results = Media.find(Media.class, "status = ?", Media.Status.DELETE_REMOTE.toString());
 
             //iterate through them, and upload one by one
             for (Media mediaDelete : results) {
@@ -211,7 +211,7 @@ public class PublishService extends Service implements Runnable {
         if (project != null) {
             HashMap<String, String> valueMap = ArchiveSiteController.getMediaMetadata(this, media);
             media.setServerUrl(project.getDescription());
-            media.setStatus(Media.STATUS_UPLOADING);
+            media.setStatus(Media.Status.UPLOADING.getValue());
             media.save();
             notifyMediaUpdated(media);
 
@@ -228,11 +228,11 @@ public class PublishService extends Service implements Runnable {
                 SiteController sc = null;
 
                 if (space.getType() == Space.TYPE_WEBDAV)
-                    sc = SiteController.getSiteController(WebDAVSiteController.SITE_KEY, this, new UploaderListener(media), null);
+                    sc = SiteController.getSiteController(WebDAVSiteController.SITE_KEY, this, new UploaderListener(media, this), null);
                 else if (space.getType() == Space.TYPE_INTERNET_ARCHIVE)
-                    sc = SiteController.getSiteController(ArchiveSiteController.SITE_KEY, this, new UploaderListener(media), null);
+                    sc = SiteController.getSiteController(ArchiveSiteController.SITE_KEY, this, new UploaderListener(media, this), null);
                 else if (space.getType() == Space.TYPE_DROPBOX)
-                    sc = SiteController.getSiteController(DropboxSiteController.SITE_KEY, this, new UploaderListener(media), null);
+                    sc = SiteController.getSiteController(DropboxSiteController.SITE_KEY, this, new UploaderListener(media, this), null);
 
                 listControllers.add(sc);
 
@@ -271,64 +271,6 @@ public class PublishService extends Service implements Runnable {
          media.delete();
          }**/
     }
-
-    public class UploaderListener implements SiteControllerListener {
-
-        private Media uploadMedia;
-
-        public UploaderListener(Media media) {
-            uploadMedia = media;
-        }
-
-        @Override
-        public void success(Message msg) {
-
-            uploadMedia.setProgress(uploadMedia.getContentLength());
-            notifyMediaUpdated(uploadMedia);
-            uploadMedia.setStatus(Media.STATUS_UPLOADED);
-            uploadMedia.save();
-            notifyMediaUpdated(uploadMedia);
-
-        }
-
-        @Override
-        public void progress(Message msg) {
-            Bundle data = msg.getData();
-            long contentLengthUploaded = data.getLong(SiteController.MESSAGE_KEY_PROGRESS);
-
-            Log.d("OAPublish", uploadMedia.getId() + " uploaded: " + contentLengthUploaded + "/" + uploadMedia.getContentLength());
-
-            uploadMedia.setProgress(contentLengthUploaded);
-
-            notifyMediaUpdated(uploadMedia);
-
-        }
-
-        @Override
-        public void failure(Message msg) {
-            Bundle data = msg.getData();
-
-            String jobIdString = data.getString(SiteController.MESSAGE_KEY_JOB_ID);
-            int jobId = (jobIdString != null) ? Integer.parseInt(jobIdString) : -1;
-
-            int messageType = data.getInt(SiteController.MESSAGE_KEY_TYPE);
-
-            int errorCode = data.getInt(SiteController.MESSAGE_KEY_CODE);
-            String errorMessage = data.getString(SiteController.MESSAGE_KEY_MESSAGE);
-            String error = "Error " + errorCode + ": " + errorMessage;
-
-            Log.d("OAPublish", "upload error: " + error);
-
-            uploadMedia.setStatusMessage(error);
-            uploadMedia.setStatus(Media.STATUS_ERROR);
-            uploadMedia.save();
-
-            notifyMediaUpdated(uploadMedia);
-
-        }
-    }
-
-    ;
 
     public class DeleteListener implements SiteControllerListener {
 
@@ -382,7 +324,7 @@ public class PublishService extends Service implements Runnable {
             String error = "Error " + errorCode + ": " + errorMessage;
             //  showError(error);
             // Log.d(TAG, "upload error: " + error);
-            deleteMedia.setStatus(Media.STATUS_ERROR);
+            deleteMedia.setStatus(Media.Status.ERROR.getValue());
             deleteMedia.setStatusMessage(error);
             notifyMediaUpdated(deleteMedia);
 

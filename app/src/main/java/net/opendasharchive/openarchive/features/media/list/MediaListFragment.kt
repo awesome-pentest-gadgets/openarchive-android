@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,13 +19,18 @@ import net.opendasharchive.openarchive.util.Constants.EMPTY_ID
 
 open class MediaListFragment : Fragment() {
 
+    companion object {
+        const val TAG = "RecyclerViewFragment"
+
+        private val mStatuses = arrayOf(
+            Media.Status.UPLOADING,
+            Media.Status.QUEUED,
+            Media.Status.ERROR)
+    }
+
     private var mProjectId: Long = -1
 
-    private var mStatus = Media.STATUS_UPLOADING.toLong()
-
-    private var mStatuses = longArrayOf(
-        Media.STATUS_UPLOADING.toLong(),
-        Media.STATUS_QUEUED.toLong(), Media.STATUS_ERROR.toLong())
+    private var mStatus = Media.Status.UPLOADING
 
     open var mMediaAdapter: MediaAdapter? = null
 
@@ -67,7 +71,7 @@ open class MediaListFragment : Fragment() {
         viewModel.mediaList.observe(viewLifecycleOwner) {
             if (mProjectId != EMPTY_ID) {
                 it?.forEach { media ->
-                    if (media.status == Media.STATUS_LOCAL) {
+                    if (media.status == Media.Status.LOCAL.value) {
                         return@forEach
                     }
                 }
@@ -107,7 +111,7 @@ open class MediaListFragment : Fragment() {
         return mMediaAdapter?.getMediaList()
     }
 
-    open fun setStatus(status: Long) {
+    open fun setStatus(status: Media.Status) {
         mStatus = status
     }
 
@@ -154,9 +158,5 @@ open class MediaListFragment : Fragment() {
          * @param viewHolder The holder of the view to drag.
          */
         fun onStartDrag(viewHolder: RecyclerView.ViewHolder?)
-    }
-
-    companion object {
-        const val TAG = "RecyclerViewFragment"
     }
 }

@@ -5,7 +5,6 @@ import android.content.Intent
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.work.CoroutineWorker
-import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.orm.SugarRecord.find
 import com.orm.SugarRecord.findById
@@ -18,7 +17,7 @@ import net.opendasharchive.openarchive.db.Project
 import net.opendasharchive.openarchive.db.Project.Companion.getById
 import net.opendasharchive.openarchive.db.Space
 import net.opendasharchive.openarchive.db.Space.Companion.getCurrentSpace
-import net.opendasharchive.openarchive.publish.UploaderListenerV2
+import net.opendasharchive.openarchive.publish.UploaderListener
 import net.opendasharchive.openarchive.services.dropbox.DropboxSiteController.Companion.SITE_KEY
 import net.opendasharchive.openarchive.services.webdav.WebDAVSiteController
 import net.opendasharchive.openarchive.util.Constants
@@ -27,38 +26,26 @@ import java.util.*
 class MediaWorker(private val ctx: Context, params: WorkerParameters) :
     CoroutineWorker(ctx, params) {
 
-    private var keepLoading = true
-
     override suspend fun doWork(): Result {
-        //get all media items that are set into queued state
-        var results: List<Media>? = null
-
         val datePublish = Date()
 
-        val where = "status = ? OR status = ?"
-        val whereArgs = arrayOf("${Media.STATUS_QUEUED}", "${Media.STATUS_UPLOADING}")
-
-        var outputData: Data? = null
+        val where = "status IN (?, ?)"
+        val whereArgs = arrayOf(Media.Status.QUEUED.toString(), Media.Status.UPLOADING.toString())
 
         try {
-            val results = find<Media>(
+            val results = find(
                 Media::class.java, where, whereArgs, null, "priority DESC", null
             )
 
             results?.map { media ->
-                val coll = findById<Collection>(
-                    Collection::class.java, media.collectionId
-                )
-                val proj = findById<Project>(
-                    Project::class.java,
-                    coll.projectId
-                )
+                val coll = findById(Collection::class.java, media.collectionId)
+                val proj = findById(Project::class.java, coll.projectId )
 
                 proj?.let {
-                    if (media.status != Media.STATUS_UPLOADING) {
+                    if (media.status != Media.Status.UPLOADING.value) {
                         media.uploadDate = datePublish
                         media.progress = 0 //should we reset this?
-                        media.status = Media.STATUS_UPLOADING
+                        media.status = Media.Status.UPLOADING.value
                         media.statusMessage = Constants.EMPTY_STRING
                     }
 
@@ -68,11 +55,11 @@ class MediaWorker(private val ctx: Context, params: WorkerParameters) :
                     project?.let {
                         val valueMap = ArchiveSiteController.getMediaMetadata(ctx, media)
                         media.serverUrl = project.description ?: Constants.EMPTY_STRING
-                        media.status = Media.STATUS_UPLOADING
+                        media.status = Media.Status.UPLOADING.value
                         media.save()
                         notifyMediaUpdated(media)
 
-                        var space: Space? = if (project.spaceId != -1L) findById<Space>(
+                        val space: Space? = if (project.spaceId != -1L) findById(
                             Space::class.java, project.spaceId
                         ) else getCurrentSpace()
 
@@ -81,25 +68,28 @@ class MediaWorker(private val ctx: Context, params: WorkerParameters) :
                             var sc: SiteController? = null
 
                             try {
-                                if (space.type == Space.TYPE_WEBDAV) sc =
-                                    SiteController.getSiteController(
-                                        WebDAVSiteController.SITE_KEY,
-                                        ctx,
-                                        UploaderListenerV2(media, ctx),
-                                        null
-                                    ) else if (space.type == Space.TYPE_INTERNET_ARCHIVE) sc =
-                                    SiteController.getSiteController(
-                                        ArchiveSiteController.SITE_KEY,
-                                        ctx,
-                                        UploaderListenerV2(media, ctx),
-                                        null
-                                    ) else if (space.type == Space.TYPE_DROPBOX) sc =
-                                    SiteController.getSiteController(
-                                        SITE_KEY,
-                                        ctx,
-                                        UploaderListenerV2(media, ctx),
-                                        null
-                                    )
+                                when (space.type) {
+                                    Space.TYPE_WEBDAV -> sc =
+                                        SiteController.getSiteController(
+                                            WebDAVSiteController.SITE_KEY,
+                                            ctx,
+                                            UploaderListener(media, ctx),
+                                            null)
+
+                                    Space.TYPE_INTERNET_ARCHIVE -> sc =
+                                        SiteController.getSiteController(
+                                            ArchiveSiteController.SITE_KEY,
+                                            ctx,
+                                            UploaderListener(media, ctx),
+                                            null)
+
+                                    Space.TYPE_DROPBOX -> sc =
+                                        SiteController.getSiteController(
+                                            SITE_KEY,
+                                            ctx,
+                                            UploaderListener(media, ctx),
+                                            null)
+                                }
                                 val result = sc?.upload(space, media, valueMap)
                                 if (result == true) {
                                     if (coll != null) {
@@ -118,7 +108,7 @@ class MediaWorker(private val ctx: Context, params: WorkerParameters) :
 
                                 media.statusMessage = err
 
-                                media.status = Media.STATUS_ERROR
+                                media.status = Media.Status.ERROR.value
                                 media.save()
                                 Result.failure()
                             }
@@ -128,7 +118,7 @@ class MediaWorker(private val ctx: Context, params: WorkerParameters) :
                         return Result.failure()
                     }
                 } ?: run {
-                    media.status = Media.STATUS_LOCAL
+                    media.status = Media.Status.LOCAL.value
                 }
             }
             return Result.success()

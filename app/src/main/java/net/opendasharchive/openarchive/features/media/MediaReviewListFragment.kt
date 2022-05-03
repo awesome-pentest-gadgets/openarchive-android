@@ -16,8 +16,8 @@ import java.util.*
 
 class MediaReviewListFragment : MediaListFragment() {
 
-    protected var mStatus = Media.STATUS_LOCAL.toLong()
-    protected var mStatuses = longArrayOf(Media.STATUS_LOCAL.toLong())
+    protected var mStatus = Media.Status.LOCAL
+    protected var mStatuses = arrayOf(Media.Status.LOCAL)
 
     private var _mBinding: FragmentMediaListSimpleBinding? = null
 
@@ -42,10 +42,10 @@ class MediaReviewListFragment : MediaListFragment() {
             mBinding.recyclerview.layoutManager = LinearLayoutManager(activity)
             mBinding.recyclerview.setHasFixedSize(true)
 
-            val listMedia: List<Media>? = getMediaByStatus(mStatuses, Media.ORDER_PRIORITY)
-
+            val listMedia = getMediaByStatus(mStatuses, Media.ORDER_PRIORITY) ?: return
             val listMediaArray = ArrayList(listMedia)
-            var mediaAdapter = MediaAdapter(requireActivity(),
+
+            val mediaAdapter = MediaAdapter(requireActivity(),
                 R.layout.activity_media_list_row,
                 listMediaArray,
                 mBinding.recyclerview,
@@ -63,16 +63,13 @@ class MediaReviewListFragment : MediaListFragment() {
         }
     }
 
-    override fun setStatus(status: Long) {
+    override fun setStatus(status: Media.Status) {
         mStatus = status
     }
 
     override fun refresh() {
-        if (mMediaAdapter != null) {
-            val listMedia = getMediaByStatus(mStatuses, Media.ORDER_PRIORITY)
-            val listMediaArray = ArrayList(listMedia)
-            mMediaAdapter?.updateData(listMediaArray)
-        }
+        val listMedia = getMediaByStatus(mStatuses, Media.ORDER_PRIORITY) ?: return
+        val listMediaArray = ArrayList(listMedia)
+        mMediaAdapter?.updateData(listMediaArray)
     }
-
 }

@@ -18,7 +18,7 @@ public class PublishJobService extends JobService {
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
 
-        List<Media> results = Media.find(Media.class, "status = ?", Media.STATUS_QUEUED + "");
+        List<Media> results = Media.find(Media.class, "status = ?", Media.Status.QUEUED.toString());
 
         //if (results.size() > 0)
             //ContextCompat.startForegroundService(this, new Intent(this, PublishService.class));
@@ -30,6 +30,4 @@ public class PublishJobService extends JobService {
     public boolean onStopJob(JobParameters jobParameters) {
         return false;
     }
-
-
 }

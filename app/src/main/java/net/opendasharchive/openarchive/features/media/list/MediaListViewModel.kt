@@ -12,13 +12,11 @@ class MediaListViewModel : ViewModel() {
     val mediaList: LiveData<List<Media>?>
         get() = _mediaList
 
-    fun getMediaList(projectId: Long, status: LongArray) {
+    fun getMediaList(projectId: Long, status: Array<Media.Status>) {
         if (projectId == EMPTY_ID) {
             _mediaList.value = Media.getMediaByStatus(status, Media.ORDER_PRIORITY)
         } else {
             _mediaList.value = Media.getMediaByProject(projectId)
         }
     }
-
-
 }

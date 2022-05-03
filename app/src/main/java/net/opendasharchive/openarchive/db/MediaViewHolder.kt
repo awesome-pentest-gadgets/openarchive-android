@@ -86,14 +86,14 @@ class MediaViewHolder(
         }
 
         val mediaPath = currentMedia.originalFilePath
-        if (currentMedia.status == Media.STATUS_PUBLISHED || currentMedia.status == Media.STATUS_UPLOADED) {
+        if (currentMedia.status == Media.Status.PUBLISHED.value || currentMedia.status == Media.Status.UPLOADED.value) {
             ivIcon.alpha = 1f
         } else {
             if (doImageFade) ivIcon.alpha = 0.5f else ivIcon.alpha = 1f
         }
 
         //Uploading animation
-        if (currentMedia.status == Media.STATUS_UPLOADING || currentMedia.status == Media.STATUS_QUEUED) {
+        if (currentMedia.status == Media.Status.UPLOADING.value || currentMedia.status == Media.Status.QUEUED.value) {
             startImageUploadProgress()
         } else {
             stopImageUploadProgress()
@@ -201,7 +201,7 @@ class MediaViewHolder(
         }
         lastMediaPath = mediaPath
         val sbTitle = StringBuffer()
-        if (currentMedia.status == Media.STATUS_ERROR) {
+        if (currentMedia.status == Media.Status.ERROR.value) {
             sbTitle.append(mContext.getString(R.string.status_error))
             progressBar?.let { progressBar ->
                 progressBar.visibility = View.GONE
@@ -211,7 +211,7 @@ class MediaViewHolder(
             }
             if (!TextUtils.isEmpty(currentMedia.statusMessage)) tvCreateDate?.text =
                 currentMedia.statusMessage
-        } else if (currentMedia.status == Media.STATUS_QUEUED) {
+        } else if (currentMedia.status == Media.Status.QUEUED.value) {
             sbTitle.append(mContext.getString(R.string.status_waiting))
             progressBar?.let { progressBar ->
                 progressBar.visibility = View.VISIBLE
@@ -219,7 +219,7 @@ class MediaViewHolder(
                 progressBar.progress = 0
                 tvProgress?.text = "0%"
             }
-        } else if (currentMedia.status == Media.STATUS_UPLOADING || currentMedia.status == Media.STATUS_UPLOADED) {
+        } else if (currentMedia.status == Media.Status.UPLOADING.value || currentMedia.status == Media.Status.UPLOADED.value) {
             sbTitle.append(mContext.getString(R.string.status_uploading))
             var perc = 0
             if (currentMedia.contentLength > 0) perc =

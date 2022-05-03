@@ -13,7 +13,7 @@ import net.opendasharchive.openarchive.db.Collection
 import net.opendasharchive.openarchive.db.Media
 import net.opendasharchive.openarchive.db.Project
 import net.opendasharchive.openarchive.db.Space
-import net.opendasharchive.openarchive.publish.UploaderListenerV2
+import net.opendasharchive.openarchive.publish.UploaderListener
 import net.opendasharchive.openarchive.services.dropbox.DropboxSiteController.Companion.SITE_KEY
 import net.opendasharchive.openarchive.services.webdav.WebDAVSiteController
 import net.opendasharchive.openarchive.util.Constants
@@ -26,8 +26,8 @@ class MediaRepositoryImpl(
     private val datePublish = Date()
 
     override suspend fun getMedia(): List<Media> {
-        val where = "status = ? OR status = ?"
-        val whereArgs = arrayOf("${Media.STATUS_QUEUED}", "${Media.STATUS_UPLOADING}")
+        val where = "status IN (?, ?)"
+        val whereArgs = arrayOf(Media.Status.QUEUED.toString(), Media.Status.UPLOADING.toString())
 
         return find(
             Media::class.java, where, whereArgs, null, "priority DESC", null
@@ -44,10 +44,10 @@ class MediaRepositoryImpl(
         )
 
         proj?.let {
-            if (media.status != Media.STATUS_UPLOADING) {
+            if (media.status != Media.Status.UPLOADING.value) {
                 media.uploadDate = datePublish
                 media.progress = 0 //should we reset this?
-                media.status = Media.STATUS_UPLOADING
+                media.status = Media.Status.UPLOADING.value
                 media.statusMessage = Constants.EMPTY_STRING
             }
 
@@ -57,11 +57,11 @@ class MediaRepositoryImpl(
             project?.let {
                 val valueMap = ArchiveSiteController.getMediaMetadata(ctx, media)
                 media.serverUrl = project.description ?: Constants.EMPTY_STRING
-                media.status = Media.STATUS_UPLOADING
+                media.status = Media.Status.UPLOADING.value
                 media.save()
                 //notifyMediaUpdated(media)
 
-                var space: Space? = if (project.spaceId != -1L) findById<Space>(
+                val space: Space? = if (project.spaceId != -1L) findById<Space>(
                     Space::class.java, project.spaceId
                 ) else Space.getCurrentSpace()
 
@@ -75,24 +75,24 @@ class MediaRepositoryImpl(
                                 SiteController.getSiteController(
                                     WebDAVSiteController.SITE_KEY,
                                     ctx,
-                                    UploaderListenerV2(media, ctx),
-                                    null
-                                )
+                                    UploaderListener(media, ctx),
+                                    null)
+
                             Space.TYPE_INTERNET_ARCHIVE -> sc =
                                 SiteController.getSiteController(
                                     ArchiveSiteController.SITE_KEY,
                                     ctx,
-                                    UploaderListenerV2(media, ctx),
-                                    null
-                                )
+                                    UploaderListener(media, ctx),
+                                    null)
+
                             Space.TYPE_DROPBOX -> sc =
                                 SiteController.getSiteController(
                                     SITE_KEY,
                                     ctx,
-                                    UploaderListenerV2(media, ctx),
-                                    null
-                                )
+                                    UploaderListener(media, ctx),
+                                    null)
                         }
+
                         val result = sc?.upload(space, media, valueMap)
                         if (result == true) {
                             if (coll != null) {
@@ -102,8 +102,6 @@ class MediaRepositoryImpl(
                                 proj.save()
                             }
                             media.save()
-                        } else {
-
                         }
                     } catch (ex: Exception) {
                         val err = "error in uploading media: " + ex.message
@@ -111,7 +109,7 @@ class MediaRepositoryImpl(
 
                         media.statusMessage = err
 
-                        media.status = Media.STATUS_ERROR
+                        media.status = Media.Status.ERROR.value
                         media.save()
                         throw Exception(err)
                     }
@@ -121,7 +119,7 @@ class MediaRepositoryImpl(
                 throw Exception()
             }
         } ?: run {
-            media.status = Media.STATUS_LOCAL
+            media.status = Media.Status.LOCAL.value
         }
     }
 
