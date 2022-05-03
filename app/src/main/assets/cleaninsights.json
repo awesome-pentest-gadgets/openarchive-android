@@ -3,6 +3,7 @@
     "siteId": 15,
     "timeout": 5,
     "debug": true,
+    "persistEveryNTimes": 1,
     "campaigns": {
         "upload-failures": {
             "start": "2022-01-01T00:00:00Z",

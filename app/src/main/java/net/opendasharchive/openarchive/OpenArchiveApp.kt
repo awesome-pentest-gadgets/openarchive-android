@@ -3,7 +3,6 @@ package net.opendasharchive.openarchive
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import com.facebook.drawee.backends.pipeline.Fresco
@@ -27,19 +26,18 @@ import org.acra.config.CoreConfigurationBuilder
 import org.acra.data.StringFormat
 
 @AcraCore(buildConfigClass = BuildConfig::class)
-class OpenArchiveApp: SugarApp() {
+class OpenArchiveApp : SugarApp() {
 
     @Volatile
     var orbotConnected = false
 
 
-    private val mCleanInsightsCirculo = CleanInsightsManager()
+    private val mCleanInsights = CleanInsightsManager()
 
     private var mCurrentSpace: Space? = null
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
-
     }
 
     override fun onCreate() {
@@ -54,7 +52,7 @@ class OpenArchiveApp: SugarApp() {
         Fresco.initialize(this, config)
         Prefs.setContext(this)
 
-        //disable proofmode GPS dat tracking by default
+        // Disable proofmode GPS dat tracking by default.
         Prefs.putBoolean(TRACK_LOCATION, false)
 
         if (getUseTor() && OrbotHelper.isOrbotInstalled(this))
@@ -63,7 +61,6 @@ class OpenArchiveApp: SugarApp() {
         initCrashReporting()
 
         uploadQueue()
-
     }
 
     private fun initCrashReporting() {
@@ -143,9 +140,7 @@ class OpenArchiveApp: SugarApp() {
         if (mCurrentSpace == null) {
             val spaceId = getCurrentSpaceId()
             if (spaceId != -1L) {
-                mCurrentSpace = findById<Space>(
-                    Space::class.java, spaceId
-                )
+                mCurrentSpace = findById(Space::class.java, spaceId)
             }
         }
         return mCurrentSpace
@@ -156,21 +151,19 @@ class OpenArchiveApp: SugarApp() {
         return orbotConnected
     }
 
-    fun hasCleanInsightsConsent () : Boolean {
-        return mCleanInsightsCirculo.hasConsent()
-    }
-    fun showCleanInsightsConsent (activity: Activity) {
-        mCleanInsightsCirculo.getConsent(activity)
+    fun hasCleanInsightsConsent(): Boolean {
+        return mCleanInsights.hasConsent()
     }
 
-    fun measureView (viewId: String)
-    {
-        mCleanInsightsCirculo.measureView(viewId)
+    fun showCleanInsightsConsent(activity: Activity) {
+        mCleanInsights.getConsent(activity)
     }
 
-    fun measureEvent (key: String, value: String)
-    {
-        mCleanInsightsCirculo.measureEvent(key, value)
+    fun measureView(viewId: String) {
+        mCleanInsights.measureView(viewId)
     }
 
+    fun measureEvent(key: String, value: String) {
+        mCleanInsights.measureEvent(key, value)
+    }
 }
