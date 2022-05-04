@@ -21,7 +21,7 @@
             android:gravity="center_vertical|center_horizontal"
             android:text="@string/tap_to_add"
             android:textColor="@color/oablue"
-            android:textSize="28dp"
+            android:textSize="28sp"
             android:visibility="gone" />
 
     </LinearLayout>

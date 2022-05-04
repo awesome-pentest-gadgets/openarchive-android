@@ -7,7 +7,7 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:theme="@style/AppMediaTheme"
-    tools:context="net.opendasharchive.openarchive.publish.UploadManagerActivity">
+    tools:context=".features.media.preview.PreviewMediaListActivity">
 
 
     <androidx.appcompat.widget.Toolbar

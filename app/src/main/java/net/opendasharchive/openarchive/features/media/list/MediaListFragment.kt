@@ -140,9 +140,9 @@ open class MediaListFragment : Fragment() {
             getMediaByStatus(mStatuses, Media.ORDER_PRIORITY)
         } else {
             getMediaByProject(mProjectId)
-        }
+        } ?: emptyList()
 
-        mMediaAdapter?.updateData((listMedia ?: emptyList()) as ArrayList<Media>)
+        mMediaAdapter?.updateData(ArrayList(listMedia))
     }
 
     override fun onResume() {

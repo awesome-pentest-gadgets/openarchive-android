@@ -5,9 +5,8 @@
     android:installLocation="auto">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name=".OpenArchiveApp"
@@ -19,24 +18,19 @@
         tools:replace="android:icon,android:allowBackup">
 
         <activity
-            android:name=".features.media.browse.BrowseProjectsActivity"
-            android:label="@string/title_activity_browser_projects"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:exported="false"
-            />
+            android:name=".publish.UploadActivity"
+            android:exported="false" />
 
         <activity
-            android:name=".publish.UploadManagerActivity"
-            android:label="@string/title_activity_upload_manager"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:exported="false"/>
+            android:name=".features.media.browse.BrowseProjectsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_browser_projects"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
             android:exported="true"
-            >
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -61,20 +55,20 @@
                 <data android:pathPattern=".*\\.png" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".services.archivedotorg.ArchiveSettingsActivity"
+            android:exported="false"
             android:label="@string/title_activity_archive_metadata"
             android:screenOrientation="portrait"
-            android:theme="@style/SettingsTheme"
-            android:exported="false"
-            />
+            android:theme="@style/SettingsTheme" />
+
         <activity
             android:name="io.scal.secureshareui.login.ArchiveLoginActivity"
+            android:exported="false"
             android:label="@string/title_activity_login"
             android:parentActivityName=".features.onboarding.SpaceSetupActivity"
-            android:screenOrientation="portrait"
-            android:exported="false"
-            >
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="net.opendasharchive.openarchive.features.onboarding.SpaceSetupActivity" />
@@ -123,9 +117,8 @@
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:configChanges="orientation|keyboard"
-            android:launchMode="singleTask"
             android:exported="true"
-            >
+            android:launchMode="singleTask">
             <intent-filter>
 
                 <!-- Change this to be db- followed by your app key -->
@@ -140,15 +133,14 @@
 
         <activity
             android:name=".features.settings.SpaceSettingsActivity"
-            android:label="@string/title_activity_space_settings"
             android:exported="true"
-            >
-
+            android:label="@string/title_activity_space_settings">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:scheme="nc" />
             </intent-filter>
         </activity>
@@ -161,15 +153,16 @@
         <activity
             android:name=".features.media.review.ReviewMediaActivity"
             android:label="@string/title_activity_view_media"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden"
-            android:parentActivityName=".MainActivity"/>
+            android:windowSoftInputMode="stateHidden" />
+
         <activity
             android:name=".features.media.batch.BatchReviewMediaActivity"
             android:label="@string/title_activity_batch_view_media"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden"
-            android:parentActivityName=".MainActivity"/>
+            android:windowSoftInputMode="stateHidden" />
 
         <activity
             android:name=".features.core.AboutActivity"
@@ -188,7 +181,6 @@
             android:name=".features.onboarding.SpaceSetupActivity"
             android:label="@string/title_activity_first_start"
             android:screenOrientation="portrait" />
-
 
         <activity
             android:name=".features.onboarding.OAAppIntro"
@@ -211,11 +203,5 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
     </application>
-
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
 
 </manifest>
