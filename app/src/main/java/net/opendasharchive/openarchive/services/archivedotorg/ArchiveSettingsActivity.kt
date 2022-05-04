@@ -7,7 +7,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import net.opendasharchive.openarchive.databinding.ActivityArchiveMetadataBinding
 import net.opendasharchive.openarchive.db.Media
-import net.opendasharchive.openarchive.db.Media.Companion.getMediaById
+import net.opendasharchive.openarchive.db.Media.Companion.getById
 import net.opendasharchive.openarchive.util.Constants.LICENSE_URL
 import net.opendasharchive.openarchive.util.Globals
 import net.opendasharchive.openarchive.util.Prefs
@@ -43,7 +43,7 @@ class ArchiveSettingsActivity : AppCompatActivity() {
     private fun initView(mediaId: Long) {
 
         if (mediaId >= 0) {
-            mMedia = getMediaById(mediaId)
+            mMedia = getById(mediaId)
         } else {
             binding.apply {
                 tvTitleLbl.hide()

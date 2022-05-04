@@ -25,24 +25,16 @@ data class Space(
             return findAll(Space::class.java)
         }
 
-        fun getCurrentSpace(): Space? {
-            val spaceId = Prefs.getCurrentSpaceId()
-            if (spaceId != null) {
-                try {
-                    val space: Space = findById(Space::class.java, spaceId)
-                    if (space != null) {
-                        if (TextUtils.isEmpty(space.name)) space.name = space.username
-                        return space
-                    }
-                }
-                catch (e2 : Exception)
-                {
-                    //handle exception that may accure when current space id is null
-                    return null
-                }
-            }
-            return null
+        fun getById(id: Long): Space? {
+            val space = findById(Space::class.java, id)
+
+            if (space != null && TextUtils.isEmpty(space.name)) space.name = space.username
+
+            return space
         }
 
+        fun getCurrentSpace(): Space? {
+            return getById(Prefs.getCurrentSpaceId())
+        }
     }
 }

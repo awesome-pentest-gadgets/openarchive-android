@@ -178,6 +178,10 @@ data class Media(
         override fun toString(): String {
             return value.toString()
         }
+
+        companion object {
+            fun getByValue(value: Int?) = Status.values().find { it.value == value }
+        }
     }
     companion object {
         const val ORDER_PRIORITY = "PRIORITY DESC"
@@ -202,7 +206,7 @@ data class Media(
         fun getMediaByStatus(status: Status): List<Media>? {
             return find(
                 Media::class.java,
-                "status = ?",
+                "STATUS = ?",
                 arrayOf(status.toString()),
                 EMPTY_STRING,
                 "STATUS DESC",
@@ -213,7 +217,7 @@ data class Media(
         fun getMediaByStatus(statuses: Array<Status>, order: String?): List<Media>? {
             return find(
                 Media::class.java,
-                statuses.joinToString(", ", "status IN (", ")") { "?" },
+                statuses.joinToString(", ", "STATUS IN (", ")") { "?" },
                 statuses.map { it.toString() }.toTypedArray(),
                 EMPTY_STRING,
                 order,
@@ -221,16 +225,15 @@ data class Media(
             )
         }
 
-        fun getMediaById(mediaId: Long): Media {
-            return findById(Media::class.java, mediaId)
+        fun getById(id: Long): Media {
+            return findById(Media::class.java, id)
         }
 
         fun getMediaByProject(projectId: Long): List<Media>? {
-            val values = arrayOf(projectId.toString() + EMPTY_STRING)
             return find(
                 Media::class.java,
                 "PROJECT_ID = ?",
-                values,
+                arrayOf(projectId.toString()),
                 EMPTY_STRING,
                 "STATUS, ID DESC",
                 EMPTY_STRING

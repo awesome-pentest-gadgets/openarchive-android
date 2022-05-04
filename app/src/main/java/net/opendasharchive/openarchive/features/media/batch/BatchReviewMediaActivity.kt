@@ -18,7 +18,7 @@ import com.stfalcon.frescoimageviewer.ImageViewer
 import net.opendasharchive.openarchive.R
 import net.opendasharchive.openarchive.databinding.ActivityBatchReviewMediaBinding
 import net.opendasharchive.openarchive.db.Media
-import net.opendasharchive.openarchive.db.Media.Companion.getMediaById
+import net.opendasharchive.openarchive.db.Media.Companion.getById
 import net.opendasharchive.openarchive.fragments.VideoRequestHandler
 import net.opendasharchive.openarchive.util.Constants.EMPTY_STRING
 import net.opendasharchive.openarchive.util.Globals
@@ -209,7 +209,7 @@ class BatchReviewMediaActivity : AppCompatActivity() {
         val mediaIds = intent.getLongArrayExtra(Globals.EXTRA_CURRENT_MEDIA_ID)
         mediaList = ArrayList()
         mediaIds?.forEach { mediaId ->
-            mediaList.add(getMediaById(mediaId))
+            mediaList.add(getById(mediaId))
         }
         // get default metadata sharing values
         val sharedPref = getSharedPreferences(Globals.PREF_FILE_KEY, Context.MODE_PRIVATE)

@@ -26,16 +26,12 @@ data class Project(
             return find(Project::class.java, "space_id = ? AND archived = ?", whereArgs, EMPTY_STRING, "ID DESC", EMPTY_STRING)
         }
 
-        fun getById(projectId: Long): Project? {
-            return findById(Project::class.java, projectId)
+        fun getById(id: Long): Project? {
+            return findById(Project::class.java, id)
         }
 
-        fun deleteById(projectId: Long): Boolean {
-            val project: Project? = findById(Project::class.java, projectId)
-            return project?.let {
-                it.delete()
-            } ?: false
+        fun deleteById(id: Long): Boolean {
+            return getById(id)?.delete() ?: false
         }
     }
-
 }
